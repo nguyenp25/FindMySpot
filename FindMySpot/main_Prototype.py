@@ -4,9 +4,10 @@ import cvzone
 import numpy as np
 
 # Video feed
-cap = cv2.VideoCapture('Park.mp4')
+cap = cv2.VideoCapture('video.mp4')
 
 with open('CarParkPos', 'rb') as f:
+    
     posList = pickle.load(f)
 
 original_width, original_height = 107, 48
