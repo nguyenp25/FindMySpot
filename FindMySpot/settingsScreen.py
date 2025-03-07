@@ -65,7 +65,7 @@ class SettingsScreen(QWidget):
 
     def gotoUserManagementScreen(self):
         # Switch to the User Management Screen
-        index = self.stacked_widget.indexOf(self.main_app.user_management_screen)
+        index = self.stacked_widget.indexOf(self.main_app.userManagement)
         if index != -1:
             self.stacked_widget.setCurrentIndex(index)
         else:
@@ -73,7 +73,7 @@ class SettingsScreen(QWidget):
 
     def gotoNotificationsScreen(self):
         # Switch to the Notifications Screen
-        index = self.stacked_widget.indexOf(self.main_app.notifications_screen)
+        index = self.stacked_widget.indexOf(self.main_app.notifications)
         if index != -1:
             self.stacked_widget.setCurrentIndex(index)
         else:
@@ -81,7 +81,7 @@ class SettingsScreen(QWidget):
     
     def gotoPaymentInformationScreen(self):
         # Switch to the Payment Information Screen
-        index = self.stacked_widget.indexOf(self.main_app.payment_information_screen)
+        index = self.stacked_widget.indexOf(self.main_app.paymentInfo)
         if index != -1:
             self.stacked_widget.setCurrentIndex(index)
         else:
@@ -89,7 +89,7 @@ class SettingsScreen(QWidget):
     
     def gotoParkingPreferencesScreen(self):
         # Switch to the Parking Preferences Screen
-        index = self.stacked_widget.indexOf(self.main_app.parking_preferences_screen)
+        index = self.stacked_widget.indexOf(self.main_app.parkingPreference)
         if index != -1:
             self.stacked_widget.setCurrentIndex(index)
         else:
@@ -97,7 +97,7 @@ class SettingsScreen(QWidget):
     
     def gotoMapSettingsScreen(self):
         # Switch to the Map Settings Screen
-        index = self.stacked_widget.indexOf(self.main_app.map_settings_screen)
+        index = self.stacked_widget.indexOf(self.main_app.mapSettings)
         if index != -1:
             self.stacked_widget.setCurrentIndex(index)
         else:
@@ -105,7 +105,7 @@ class SettingsScreen(QWidget):
     
     def gotoPrivacySettingsScreen(self):
         # Switch to the Privacy Settings Screen
-        index = self.stacked_widget.indexOf(self.main_app.privacy_settings_screen)
+        index = self.stacked_widget.indexOf(self.main_app.privacySettings)
         if index != -1:
             self.stacked_widget.setCurrentIndex(index)
         else:
@@ -113,7 +113,7 @@ class SettingsScreen(QWidget):
 
     def gotoHelpAndSupportScreen(self):
         # Switch to the Help and Support Screen
-        index = self.stacked_widget.indexOf(self.main_app.help_and_support_screen)
+        index = self.stacked_widget.indexOf(self.main_app.helpScreen)
         if index != -1:
             self.stacked_widget.setCurrentIndex(index)
         else:
@@ -121,7 +121,7 @@ class SettingsScreen(QWidget):
 
     def gotoDashboard(self):
         # Switch to the Dashboard Screen
-        index = self.stacked_widget.indexOf(self.main_app.dashboard_screen)
+        index = self.stacked_widget.indexOf(self.main_app.dashboard)
         if index != -1:
             self.stacked_widget.setCurrentIndex(index)
         else:
