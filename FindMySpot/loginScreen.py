@@ -1,5 +1,4 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QStackedWidget, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
 
 class LoginScreen(QWidget):
     def __init__(self, stacked_widget, db):
@@ -41,8 +40,17 @@ class LoginScreen(QWidget):
         if self.db.validate_login(username, password):
             self.login_status_label.setText('')
             self.stacked_widget.setCurrentIndex(1)
+            
         else:
             self.login_status_label.setText('Invalid username or password')
+
+        if self.db.validate_login(username, password):
+            self.login_status_label.setText('')
+            self.stacked_widget.setCurrentIndex(1)
+            self.clearInputs()
+        else:
+            self.login_status_label.setText('Invalid username or password')
+
 
     def register(self):
         username = self.username_input.text()
@@ -58,3 +66,11 @@ class LoginScreen(QWidget):
 
         self.db.add_user(username, password)
         self.login_status_label.setText("Registration successful")
+        
+        if self.db.add_user(username, password):
+            self.login_status_label.setText("Registration successful")
+            self.clearInputs()
+        
+    def clearInputs(self):
+        self.username_input.setText('')
+        self.password_input.setText('')
