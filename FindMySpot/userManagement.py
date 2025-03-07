@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
 
 class UserManagementScreen(QWidget):
     def __init__(self, stacked_widget):
@@ -7,18 +7,23 @@ class UserManagementScreen(QWidget):
         self.initUI()
 
     def initUI(self):
-        label = QLabel("User Management Settings", self)
         layout = QVBoxLayout()
+
+        label = QLabel("User Management Screen")
         layout.addWidget(label)
 
-        # Back to Settings button
         self.back_button = QPushButton('Back to Settings', self)
-        self.back_button.clicked.connect(self.gotoSettings)
+        self.back_button.clicked.connect(self.gotoSettingsScreen)
         layout.addWidget(self.back_button)
 
         self.setLayout(layout)
 
-    def gotoSettings(self):
-        # Assuming the SettingsScreen is at a specific index
-        # Replace 0 with the actual index of SettingsScreen in your stacked_widget
-        self.stacked_widget.setCurrentIndex(0)
+    def gotoSettingsScreen(self):
+        # Delayed import to resolve circular dependency
+        from settingsScreen import SettingsScreen
+
+        for index in range(self.stacked_widget.count()):
+            widget = self.stacked_widget.widget(index)
+            if isinstance(widget, SettingsScreen):
+                self.stacked_widget.setCurrentIndex(index)
+                break

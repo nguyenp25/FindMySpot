@@ -1,47 +1,52 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QStackedWidget, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
-from database import Database
-from settingsScreen import SettingsScreen
-from loginScreen import LoginScreen
-from dashboard import DashboardScreen
-from userManagement import UserManagementScreen
-from notifications import NotificationsScreen
-from paymentInfo import PaymentInfoScreen
-from parkingPreference import ParkingPreferencesScreen
-from mapSettings import MapSettingsScreen
-from privacySettings import PrivacySettingsScreen
-from helpScreen import HelpSupportScreen
-
+from PyQt5.QtWidgets import QApplication, QStackedWidget
+from database import Database #Import Database
+from settingsScreen import SettingsScreen #Import SettingsScreen
+from loginScreen import LoginScreen #Import LoginScreen
+from dashboard import DashboardScreen #Import DashboardScreen
+from userManagement import UserManagementScreen  # Import UserManagementScreen
+from notifications import NotificationsScreen  # Import NotificationsScreen
+from paymentInfo import PaymentInformationScreen  # Import PaymentInformationScreen
+from parkingPreference import ParkingPreferencesScreen  # Import ParkingPreferencesScreen
+from mapSettings import MapSettingsScreen  # Import MapSettingsScreen
+from privacySettings import PrivacySettingsScreen  # Import PrivacySettingsScreen
+from helpScreen import HelpSupportScreen  # Import HelpAndSupportScreen
 
 class MainApp(QApplication):
     def __init__(self, args):
         super().__init__(args)
         self.stacked_widget = QStackedWidget()
 
-        self.db = Database()
-        self.loginScreen = LoginScreen(self.stacked_widget, self.db)
-        self.dashboard_screen = DashboardScreen(self.stacked_widget)
-        self.user_management_screen = UserManagementScreen(self.stacked_widget)  # Pass stacked_widget
-        self.notifications_screen = NotificationsScreen(self.stacked_widget)  # Pass stacked_widget
-        self.payment_info_screen = PaymentInfoScreen(self.stacked_widget)  # Pass stacked_widget
-        self.parking_preferences_screen = ParkingPreferencesScreen(self.stacked_widget)  # Pass stacked_widget
-        self.map_settings_screen = MapSettingsScreen(self.stacked_widget)  # Pass stacked_widget
-        self.privacy_settings_screen = PrivacySettingsScreen(self.stacked_widget)  # Pass stacked_widget
-        self.help_support_screen = HelpSupportScreen(self.stacked_widget)  # Pass stacked_widget
-        self.settings_screen = SettingsScreen(self.stacked_widget, self)  # Pass 'self' as reference
+        self.database = Database()
+        self.loginScreen = LoginScreen(self.stacked_widget, self.database)
+        self.dashboard = DashboardScreen(self.stacked_widget)
+        # Assuming that SettingsScreen is updated to handle navigation
+        self.settingScreen = SettingsScreen(self.stacked_widget, self)
+        self.userManagement = UserManagementScreen(self.stacked_widget)
+        self.notifications = NotificationsScreen(self.stacked_widget)
+        self.paymentInfo = PaymentInformationScreen(self.stacked_widget)
+        self.parkingPreference = ParkingPreferencesScreen(self.stacked_widget)
+        self.mapSettings = MapSettingsScreen(self.stacked_widget)
+        self.privacySettings = PrivacySettingsScreen(self.stacked_widget)
+        self.helpScreen = HelpSupportScreen(self.stacked_widget)
+
+
+             
 
         self.stacked_widget.addWidget(self.loginScreen)
-        self.stacked_widget.addWidget(self.dashboard_screen)
-        self.stacked_widget.addWidget(self.settings_screen)
-        self.stacked_widget.addWidget(self.user_management_screen)
-        self.stacked_widget.addWidget(self.notifications_screen)
-        self.stacked_widget.addWidget(self.payment_info_screen)
-        self.stacked_widget.addWidget(self.parking_preferences_screen)
-        self.stacked_widget.addWidget(self.map_settings_screen)
-        self.stacked_widget.addWidget(self.privacy_settings_screen)
-        self.stacked_widget.addWidget(self.help_support_screen)
+        self.stacked_widget.addWidget(self.dashboard)
+        self.stacked_widget.addWidget(self.settingScreen)
+        self.stacked_widget.addWidget(self.userManagement)  # Add UserManagementScreen to QStackedWidget
+        self.stacked_widget.addWidget(self.notifications)  # Add NotificationsScreen
+        self.stacked_widget.addWidget(self.paymentInfo)
+        self.stacked_widget.addWidget(self.parkingPreference)
+        self.stacked_widget.addWidget(self.mapSettings)
+        self.stacked_widget.addWidget(self.privacySettings)
+        self.stacked_widget.addWidget(self.helpScreen)
 
-        self.loadStylesheet("styles.qss")
+
+
+        self.loadStylesheet("style.qss")
         self.stacked_widget.show()
 
     def loadStylesheet(self, filename):
