@@ -39,7 +39,10 @@ class LoginScreen(QWidget):
         password = self.password_input.text()
         if self.db.validate_login(username, password):
             self.login_status_label.setText('')
+            main_window = self.stacked_widget.widget(10)  # Assuming MainWindow is at index 1
+            main_window.set_current_user(username)  # Set the current user in MainWindow
             self.stacked_widget.setCurrentIndex(1)
+            self.clearInputs()
             
         else:
             self.login_status_label.setText('Invalid username or password')

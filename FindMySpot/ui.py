@@ -23,17 +23,20 @@ app = QtWidgets.QApplication(sys.argv)
 
 # Main window class
 class MainWindow(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, db):
         super().__init__()
 
+        self.db = db
         # Video feed
         self.cap = cv2.VideoCapture('video.mp4')
-
         # Playback flag
         self.is_paused = False
 
+        self.current_user = None
         # UI setup
         # Modify these lines in the __init__ method of the MainWindow class
+
+        self.reserved_spots = []
 
         self.setGeometry(100, 100, 2000, 1200)  # Double the width and height
 
@@ -67,6 +70,11 @@ class MainWindow(QtWidgets.QWidget):
         self.info_panel = QtWidgets.QTextBrowser(self)
         self.right_layout.addWidget(self.info_panel)
 
+        # Notification panel
+        self.notification_panel = QtWidgets.QTextBrowser(self)  # or QLabel if you prefer
+        self.notification_panel.setFixedHeight(50)  # Adjust the height as needed
+        self.right_layout.addWidget(self.notification_panel)
+
         # Add right layout to main layout
         self.layout.addLayout(self.right_layout)
 
@@ -85,20 +93,18 @@ class MainWindow(QtWidgets.QWidget):
 
         # Update info panel
         self.update_info_panel()
+        
 
+    def on_user_login(self):
+        # Call this method when the user logs in
+        self.reserved_spots = self.db.get_all_reserved_spots()
+        self.update_frame()  # Update the frame to reflect the new reserved spots
 
-    # Method to unreserve a parking space
-    def unreserve_space(self):
-        try:
-            space_number = int(self.space_input.text())
-            if 0 <= space_number < len(posList):
-                reserved_space = posList[space_number]
-                if reserved_space in reserved_spaces:
-                    reserved_spaces.remove(reserved_space)
-                    self.update_info_panel()
-                    self.space_input.clear()
-        except ValueError:
-            pass
+    def display_notification(self, message):
+        self.notification_panel.setText(message)
+
+    def set_current_user(self, username):
+        self.current_user = username
 
     # Additional method to toggle pause
     def toggle_pause(self):
@@ -138,7 +144,7 @@ class MainWindow(QtWidgets.QWidget):
             # Scale the coordinates for the resized frame
             x_scaled, y_scaled = int(pos[0] * scale_factor), int(pos[1] * scale_factor)
             width_scaled, height_scaled = int(original_width * scale_factor), int(original_height * scale_factor)
-
+            self.reserved_spots = self.db.get_all_reserved_spots()
             # Crop from the processed single-channel image (imgDilate)
             imgCrop = imgDilate[pos[1]:pos[1] + original_height, pos[0]:pos[0] + original_width]
             count = cv2.countNonZero(imgCrop)
@@ -147,7 +153,7 @@ class MainWindow(QtWidgets.QWidget):
             threshold = 1400  # Example threshold, adjust this value based on your testing
 
             if count < threshold:
-                if pos in reserved_spaces:
+                if index in self.reserved_spots:
                     color = (0, 255, 255)  # Yellow for reserved spaces
                 else:
                     color = (57, 255, 20)  # Green for free spaces
@@ -165,17 +171,6 @@ class MainWindow(QtWidgets.QWidget):
         self.info_panel.setText(f"Free spaces: {free_spaces}")
         return frame_resized
     
-    def reserve_space(self):
-        try:
-            space_number = int(self.space_input.text())
-            if 0 <= space_number < len(posList):
-                reserved_space = posList[space_number]
-                if reserved_space not in reserved_spaces:
-                    reserved_spaces.add(reserved_space)
-                    self.update_info_panel()
-                    self.space_input.clear()
-        except ValueError:
-            pass
 
     def convert_cv_qt(self, frame):
         """Convert from an opencv image to QPixmap"""
@@ -192,9 +187,33 @@ class MainWindow(QtWidgets.QWidget):
         try:
             space_number = int(self.space_input.text())
             if 0 <= space_number < len(posList):
-                reserved_spaces.add(posList[space_number])
-                self.update_info_panel()
-                self.space_input.clear()
+                username = self.current_user # You'll need to get the username from the user session
+                success = self.db.reserve_parking_spot(username, space_number)
+                if success:
+                    reserved_spaces.add(posList[space_number])
+                    self.display_notification("Space reserved successfully.")
+                    self.space_input.clear()
+                else:
+                    self.display_notification("Space already reserved!")
+        except ValueError:
+            pass
+
+    def unreserve_space(self):
+        try:
+            space_number = int(self.space_input.text())
+            if 0 <= space_number < len(posList):
+                reserved_space = posList[space_number]
+                success = self.db.unreserve_parking_spot(self.current_user, space_number)
+
+                if success:
+                    # Only attempt to remove if the space is in the set
+                    if reserved_space in reserved_spaces:
+                        reserved_spaces.remove(reserved_space)
+                    self.update_info_panel()
+                    self.space_input.clear()
+                    self.display_notification("Space unreserved successfully.")
+                else:
+                    self.display_notification("You have not reserved this space.")
         except ValueError:
             pass
 
