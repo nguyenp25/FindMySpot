@@ -2,6 +2,8 @@ import sys
 from PyQt5.QtWidgets import QApplication, QStackedWidget
 from PyQt5.QtCore import Qt, QCoreApplication
 
+#FindMySpot
+
 # Set the attribute before creating the QApplication instance
 QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
 
