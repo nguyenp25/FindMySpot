@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
 
-class UserManagementScreen(QWidget):
+class HelpScreen(QWidget):
     def __init__(self, stacked_widget):
         super().__init__()
         self.stacked_widget = stacked_widget
@@ -9,9 +9,11 @@ class UserManagementScreen(QWidget):
     def initUI(self):
         layout = QVBoxLayout()
 
-        label = QLabel("User Management Screen")
+        # Add content for the Help and Support screen here
+        label = QLabel("Help and Support Screen")
         layout.addWidget(label)
 
+        # Back to Settings button
         self.back_button = QPushButton('Back to Settings', self)
         self.back_button.clicked.connect(self.gotoSettingsScreen)
         layout.addWidget(self.back_button)
@@ -20,7 +22,7 @@ class UserManagementScreen(QWidget):
 
     def gotoSettingsScreen(self):
         # Delayed import to resolve circular dependency
-        from settingsScreen import SettingsScreen
+        from settings_screen import SettingsScreen
 
         for index in range(self.stacked_widget.count()):
             widget = self.stacked_widget.widget(index)

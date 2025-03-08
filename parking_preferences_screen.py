@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
 
-class PaymentInformationScreen(QWidget):
+class ParkingPreferencesScreen(QWidget):
     def __init__(self, stacked_widget):
         super().__init__()
         self.stacked_widget = stacked_widget
@@ -9,8 +9,8 @@ class PaymentInformationScreen(QWidget):
     def initUI(self):
         layout = QVBoxLayout()
 
-        # Add content for the Payment Information screen here
-        label = QLabel("Payment Information Screen")
+        # Add content for the Parking Preferences screen here
+        label = QLabel("Parking Preferences Screen")
         layout.addWidget(label)
 
         # Back to Settings button
@@ -22,7 +22,7 @@ class PaymentInformationScreen(QWidget):
 
     def gotoSettingsScreen(self):
         # Delayed import to resolve circular dependency
-        from settingsScreen import SettingsScreen
+        from settings_screen import SettingsScreen
 
         for index in range(self.stacked_widget.count()):
             widget = self.stacked_widget.widget(index)

@@ -1,35 +1,74 @@
+/* Global Settings */
 QWidget {
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    color: #333;
-    background: #f0f0f0;
+    font-family: 'Montserrat', 'Segoe UI', sans-serif; /* Luxury font, fallback to Segoe UI */
+    font-size: 14pt; /* Slightly larger for readability on laptops */
+    background-color: #1A1A1A; /* Dark charcoal background */
+    color: #E0E0E0; /* Light gray text for contrast */
 }
 
-QLabel {
-    color: #555;
-}
-
-QLineEdit {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 5px;
-    margin-bottom: 10px;
-    font-size: 16px;
-}
-
+/* Push Buttons */
 QPushButton {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #eee;
-    color: #333;
+    border: 2px solid #D4AF37; /* Gold border for luxury */
+    border-radius: 8px; /* Softer, modern corners */
+    padding: 8px 20px; /* Increased padding for comfort */
+    background-color: #2C2C2C; /* Dark gray button background */
+    color: #D4AF37; /* Gold text */
+    font-weight: 600; /* Medium weight for emphasis */
+    min-width: 120px; /* Ensure buttons aren't too small */
+    min-height: 40px; /* Comfortable height */
 }
 
 QPushButton:hover {
-    background-color: #ddd;
+    background-color: #D4AF37; /* Gold on hover */
+    color: #1A1A1A; /* Dark text on hover for contrast */
+    border: 2px solid #FFD700; /* Brighter gold border */
 }
 
 QPushButton:pressed {
-    background-color: #ccc;
+    background-color: #B8860B; /* Darker gold when pressed */
+}
+
+/* Line Edit (Input Fields) */
+QLineEdit {
+    border: 2px solid #4A4A4A; /* Subtle dark gray border */
+    border-radius: 6px; /* Rounded edges */
+    padding: 8px 12px; /* Comfortable padding */
+    background-color: #2C2C2C; /* Dark input background */
+    color: #E0E0E0; /* Light text */
+    font-size: 13pt; /* Slightly smaller than labels/buttons */
+}
+
+QLineEdit:focus {
+    border: 2px solid #D4AF37; /* Gold border on focus */
+}
+
+/* Labels */
+QLabel {
+    color: #E0E0E0; /* Light gray for readability */
+    font-weight: 400; /* Regular weight for body text */
+    padding: 4px; /* Slight padding for spacing */
+}
+
+/* Text Browser (Info/Notification Panels) */
+QTextBrowser {
+    background-color: #252525; /* Slightly lighter dark background */
+    border: 1px solid #4A4A4A; /* Subtle border */
+    border-radius: 6px;
+    padding: 8px;
+    color: #E0E0E0;
+    font-size: 12pt; /* Slightly smaller for dense text */
+}
+
+/* Specific Adjustments */
+#dashboard_label { /* Target specific QLabel by object name */
+    font-size: 20pt;
+    font-weight: 700; /* Bold for headers */
+    color: #D4AF37; /* Gold for emphasis */
+    padding: 10px;
+}
+
+#balance_label {
+    font-size: 16pt;
+    color: #FFD700; /* Brighter gold for balance */
+    padding: 8px;
 }
