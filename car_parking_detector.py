@@ -1,11 +1,9 @@
-# car_parking_detector.py
 import cv2
 import numpy as np
 from ultralytics import YOLO
 
 class ParkingDetector:
-    def __init__(self, video_path, weights_path, spots_file='parking_spots.txt', display_scale=0.5, conf_threshold=0.2, iou_threshold=0.1):
-        # Load YOLOv8 model instead of YOLOv5
+    def __init__(self, video_path, weights_path, spots_file='', display_scale=0.5, conf_threshold=0.2, iou_threshold=0.2):
         self.model = YOLO(weights_path)
         self.video = cv2.VideoCapture(video_path)
         if not self.video.isOpened():
@@ -76,15 +74,12 @@ class ParkingDetector:
             new_height = int(height * self.display_scale)
             display_frame = cv2.resize(frame, (new_width, new_height), interpolation=cv2.INTER_AREA)
             
-            # YOLOv8 detection with specified confidence and iou thresholds
             results = self.model(frame, conf=self.conf_threshold, iou=self.iou_threshold)
-            # Filter for cars (class 2 in COCO dataset)
             car_detections = [box for box in results[0].boxes if int(box.cls) == 2]
             
             self.spot_status = {i: False for i in range(len(self.spots))}
             
             for detection in car_detections:
-                # YOLOv8 returns xyxy format directly
                 x1, y1, x2, y2 = map(int, detection.xyxy[0])
                 box = (x1, y1, x2, y2)
                 spot_indices = self.check_spot_occupation(box)
@@ -100,18 +95,20 @@ class ParkingDetector:
                     y2_display = int(y2 * self.display_scale)
                     confidence = float(detection.conf)
                     
-                    cv2.rectangle(display_frame, (x1_display, y1_display), (x2_display, y2_display), (0, 255, 0), 2)
-                    cv2.putText(display_frame, f'Car {confidence:.2f}', (x1_display, y1_display-10),
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                    cv2.rectangle(display_frame, (x1_display, y1_display), (x2_display, y2_display), (0, 255, 0), 1)
+                    # Smaller car label (font size reduced from 0.5 to 0.4)
+                    cv2.putText(display_frame, f'Car {confidence:.2f}', (x1_display, y1_display-5),
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
             
             for i, spot in enumerate(self.spots):
                 color = (0, 255, 0) if not self.spot_status[i] else (0, 0, 255)
                 scaled_spot = [int(coord * self.display_scale) for coord in spot]
                 pts = np.array([[scaled_spot[j], scaled_spot[j+1]] for j in range(0, 8, 2)], np.int32)
                 pts = pts.reshape((-1, 1, 2))
-                cv2.polylines(display_frame, [pts], True, color, 2)
-                cv2.putText(display_frame, f"Spot {i}: {'Occupied' if self.spot_status[i] else 'Available'}",
-                           (scaled_spot[0], scaled_spot[1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+                cv2.polylines(display_frame, [pts], True, color, 1)
+                # Smaller spot label (font size reduced from 0.5 to 0.4)
+                cv2.putText(display_frame, f"Spot {i}: {'Occupied' if self.spot_status[i] else 'Free'}",
+                           (scaled_spot[0], scaled_spot[1]-5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
             
             cv2.imshow('Parking Detection', display_frame)
             key = cv2.waitKey(1) & 0xFF
@@ -125,8 +122,8 @@ class ParkingDetector:
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    video_path = 'Park3.mp4'
-    weights_path = 'yolov8m.pt'
+    video_path = 'example.mp4'
+    weights_path = 'yolov8s.pt'
     try:
         detector = ParkingDetector(video_path, weights_path, display_scale=0.5, conf_threshold=0.4, iou_threshold=0.6)
         detector.detect()
