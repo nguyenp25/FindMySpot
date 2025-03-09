@@ -41,19 +41,7 @@ class DashboardScreen(QWidget):
         self.reservation_table.setStyleSheet("alternate-background-color: #f2f2f2; background-color: #ffffff;")
         layout.addWidget(self.reservation_table)
         self.update_reservations()
-        # Horizontal layout for map and hyperlink
-        map_layout = QHBoxLayout()
-        self.map_view = QWebEngineView()
-        self.map_view.load(QUrl.fromLocalFile(r"\maps.html"))
-        map_layout.addWidget(self.map_view)
 
-        layout.addLayout(map_layout)  # Add map and hyperlink layout to the main layout
-        # Hyperlink label
-        self.map_link = QLabel('<a href="https://www.google.com/maps/place/Annex+Parking+Lot/@42.695879,-71.5690883,9z/data=!4m10!1m2!2m1!1swentworth+parking+lot!3m6!1s0x89e37a2137591b93:0x58c7783c39892a52!8m2!3d42.3352399!4d-71.0933809!15sChV3ZW50d29ydGggcGFya2luZyBsb3SSAQtwYXJraW5nX2xvdOABAA!16s%2Fg%2F11c61w4530?entry=ttu">View on Google Maps</a>', self)
-        self.map_link.setOpenExternalLinks(True)  # Enable opening the link in a web browser
-        map_layout.addWidget(self.map_link)
-
-        layout.addLayout(map_layout) 
         self.setLayout(layout)
         self.setWindowTitle('Dashboard')
 

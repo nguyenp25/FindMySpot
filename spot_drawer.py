@@ -61,7 +61,7 @@ class ParkingSpotDrawer:
         print(f"Saved {len(self.spots)} parking spots to {filename}")
 
 if __name__ == "__main__":
-    video_path = 'video.mp4'  # Replace with your video path
+    video_path = 'example.mp4'  # Replace with your video path
     try:
         drawer = ParkingSpotDrawer(video_path)
         spots = drawer.run()

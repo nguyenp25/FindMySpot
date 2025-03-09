@@ -10,7 +10,7 @@ from ultralytics import YOLO
 from car_parking_detector import ParkingDetector
 
 # Configuration variables
-scale_percent = 75  # Reduced from 100 to 75 for better performance while still larger
+scale_percent = 75
 reserved_spaces = set()
 
 app = QtWidgets.QApplication(sys.argv)
@@ -23,8 +23,8 @@ class MainWindow(QtWidgets.QWidget):
         self.main_app = main_app
         self.stacked_widget = stacked_widget
         
-        video_path = 'video.mp4'
-        weights_path = 'yolov8m.pt'
+        video_path = 'example.mp4'
+        weights_path = 'yolov8s.pt'
         spots_file = 'parking_spots.txt'
         self.detector = ParkingDetector(
             video_path, 
@@ -46,8 +46,8 @@ class MainWindow(QtWidgets.QWidget):
         self.current_user = None
         self.reserved_spots = []
         self.show_cars = False
-        self.frame_counter = 0  # For skipping detection frames
-        self.detection_interval = 2  # Run detection every 5 frames
+        self.frame_counter = 0
+        self.detection_interval = 0.5
 
         self.setGeometry(100, 100, int(1920 * 0.8), int(1080 * 0.8))
         self.setWindowTitle('FindMySpot')
@@ -58,8 +58,8 @@ class MainWindow(QtWidgets.QWidget):
         self.setLayout(self.main_layout)
 
         self.image_label = QtWidgets.QLabel(self)
-        self.image_label.setMinimumSize(int(1920 * 0.6), int(1080 * 0.6))  # Adjusted slightly smaller
-        self.image_label.setMaximumSize(int(1920 * 0.8), int(1080 * 0.8))  # Adjusted for performance
+        self.image_label.setMinimumSize(int(1920 * 0.6), int(1080 * 0.6))
+        self.image_label.setMaximumSize(int(1920 * 0.8), int(1080 * 0.8))
         self.image_label.setScaledContents(True)
         self.image_label.mousePressEvent = self.toggle_car_visibility
 
@@ -95,6 +95,10 @@ class MainWindow(QtWidgets.QWidget):
         self.info_panel.setMinimumHeight(150)
         self.right_layout.addWidget(self.info_panel)
 
+        self.notification_panel = QtWidgets.QTextBrowser(self)
+        self.notification_panel.setFixedHeight(100)
+        self.right_layout.addWidget(self.notification_panel)
+
         self.pause_button = QtWidgets.QPushButton("Pause", self)
         self.pause_button.clicked.connect(self.toggle_pause)
         self.right_layout.addWidget(self.pause_button)
@@ -103,7 +107,7 @@ class MainWindow(QtWidgets.QWidget):
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
-        self.timer.start(33)  # Increased to ~30 FPS (33 ms) for smoother playback
+        self.timer.start(33)
 
         self.update_info_panel()
 
@@ -134,7 +138,6 @@ class MainWindow(QtWidgets.QWidget):
                 self.detector.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     def process_frame(self, frame):
-        # Only run detection every detection_interval frames
         if self.frame_counter % self.detection_interval == 0:
             frame_enhanced = cv2.convertScaleAbs(frame, alpha=1.2, beta=10)
             results = self.detector.model(frame_enhanced)
@@ -150,15 +153,13 @@ class MainWindow(QtWidgets.QWidget):
                     if spot_idx >= 0:
                         self.detector.spot_status[spot_idx] = True
         else:
-            # Use previous spot status for non-detection frames
-            car_detections = []  # No new detections to draw unless toggled
+            car_detections = []
 
-        scale_factor = scale_percent / 100 * 2  # Still larger, but moderated by scale_percent
+        scale_factor = scale_percent / 100 * 2
         width_resized = int(frame.shape[1] * scale_factor)
         height_resized = int(frame.shape[0] * scale_factor)
         frame_resized = cv2.resize(frame, (width_resized, height_resized), interpolation=cv2.INTER_AREA)
 
-        # Draw car detections if toggled on (only on detection frames)
         if self.show_cars and self.frame_counter % self.detection_interval == 0:
             for detection in car_detections:
                 x1, y1, x2, y2 = map(int, detection[:4])
@@ -173,7 +174,7 @@ class MainWindow(QtWidgets.QWidget):
                 cv2.putText(frame_resized, f'Car {confidence:.2f}', (x1_display, y1_display - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
-        # Draw parking spots
+        # Draw parking spots and adjust free spaces for reservations
         free_spaces = len(self.detector.spots)
         self.reserved_spots = self.db.get_all_reserved_spots()
         for i, spot in enumerate(self.detector.spots):
@@ -183,15 +184,26 @@ class MainWindow(QtWidgets.QWidget):
 
             if i in self.reserved_spots:
                 color = (0, 255, 255)  # Yellow
+                free_spaces -= 1  # Decrease free spaces for reserved spots
             elif not self.detector.spot_status[i]:
                 color = (57, 255, 20)  # Green
             else:
                 color = (0, 0, 255)   # Red
-                free_spaces -= 1
+                free_spaces -= 1  # Decrease free spaces for occupied spots
 
             cv2.polylines(frame_resized, [pts], True, color, 2)
-            cv2.putText(frame_resized, f"Spot {i}", (scaled_spot[0], scaled_spot[1] - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+            spot_center_x = int(sum(scaled_spot[::2]) / 4)
+            spot_center_y = int(sum(scaled_spot[1::2]) / 4)
+            text = f"Spot {i}"
+            text_size, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 3)
+            text_x = spot_center_x - text_size[0] // 2
+            text_y = spot_center_y + text_size[1] // 2
+            cv2.rectangle(frame_resized, 
+                          (text_x - 5, text_y - text_size[1] - 5), 
+                          (text_x + text_size[0] + 5, text_y + 5), 
+                          (50, 50, 50), -1)
+            cv2.putText(frame_resized, text, (text_x, text_y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, color, 3)
 
         self.info_panel.setText(f"Free spaces: {free_spaces}")
         return frame_resized
@@ -205,6 +217,9 @@ class MainWindow(QtWidgets.QWidget):
 
     def update_info_panel(self):
         self.info_panel.setText("Information Panel\n")
+
+    def display_notification(self, message):
+        self.notification_panel.setText(message)
 
     def reserve_space(self):
         try:
@@ -222,8 +237,15 @@ class MainWindow(QtWidgets.QWidget):
                         if hasattr(dashboard_screen, 'update_dashboard'):
                             dashboard_screen.update_dashboard()
                         self.space_input.clear()
+                        self.display_notification("Space reserved successfully.")
+                    else:
+                        self.display_notification("Space already reserved!")
+                else:
+                    self.display_notification("Insufficient balance to reserve a space.")
+            else:
+                self.display_notification("Invalid space number!")
         except ValueError:
-            pass
+            self.display_notification("Invalid input for space number.")
 
     def unreserve_space(self):
         try:
@@ -239,8 +261,13 @@ class MainWindow(QtWidgets.QWidget):
                     self.db.update_account_balance(self.current_user, 5)
                     dashboard_screen = self.stacked_widget.widget(1)
                     dashboard_screen.update_dashboard()
+                    self.display_notification("Space unreserved successfully.")
+                else:
+                    self.display_notification("You have not reserved this space.")
+            else:
+                self.display_notification("Invalid space number!")
         except ValueError:
-            pass
+            self.display_notification("Invalid input for space number.")
 
     def closeEvent(self, event):
         self.detector.video.release()
