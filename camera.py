@@ -4,9 +4,8 @@ import numpy as np
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QPushButton, QStackedWidget, QLabel
+from PyQt5.QtWidgets import QPushButton, QStackedWidget, QLabel, QVBoxLayout
 from ultralytics import YOLO
-
 from car_parking_detector import ParkingDetector
 
 # Configuration variables
@@ -57,6 +56,7 @@ class MainWindow(QtWidgets.QWidget):
         self.main_layout.setContentsMargins(20, 20, 20, 20)
         self.setLayout(self.main_layout)
 
+        # Video feed
         self.image_label = QtWidgets.QLabel(self)
         self.image_label.setMinimumSize(int(1920 * 0.6), int(1080 * 0.6))
         self.image_label.setMaximumSize(int(1920 * 0.8), int(1080 * 0.8))
@@ -74,6 +74,7 @@ class MainWindow(QtWidgets.QWidget):
 
         self.main_layout.addWidget(self.image_label, stretch=3)
         
+        # Right panel layout
         self.right_layout = QtWidgets.QVBoxLayout()
         self.right_layout.setSpacing(15)
         self.right_layout.setContentsMargins(10, 10, 10, 10)
@@ -91,12 +92,24 @@ class MainWindow(QtWidgets.QWidget):
         self.unreserve_button.clicked.connect(self.unreserve_space)
         self.right_layout.addWidget(self.unreserve_button)
 
+        # Info panel with label
+        self.info_label = QtWidgets.QLabel("Parking Information", self)
+        self.info_label.setObjectName("info_label")
+        self.right_layout.addWidget(self.info_label)
+
         self.info_panel = QtWidgets.QTextBrowser(self)
-        self.info_panel.setMinimumHeight(150)
+        self.info_panel.setObjectName("info_panel")
+        self.info_panel.setMinimumHeight(200)
         self.right_layout.addWidget(self.info_panel)
 
+        # Notification panel with label
+        self.notification_label = QtWidgets.QLabel("Notifications", self)
+        self.notification_label.setObjectName("notification_label")
+        self.right_layout.addWidget(self.notification_label)
+
         self.notification_panel = QtWidgets.QTextBrowser(self)
-        self.notification_panel.setFixedHeight(100)
+        self.notification_panel.setObjectName("notification_panel")
+        self.notification_panel.setMinimumHeight(150)
         self.right_layout.addWidget(self.notification_panel)
 
         self.pause_button = QtWidgets.QPushButton("Pause", self)
@@ -110,6 +123,10 @@ class MainWindow(QtWidgets.QWidget):
         self.timer.start(33)
 
         self.update_info_panel()
+
+        # Load QSS stylesheet
+        with open("style.qss", "r") as f:
+            self.setStyleSheet(f.read())
 
     def toggle_car_visibility(self, event):
         self.show_cars = not self.show_cars
@@ -174,7 +191,6 @@ class MainWindow(QtWidgets.QWidget):
                 cv2.putText(frame_resized, f'Car {confidence:.2f}', (x1_display, y1_display - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
-        # Draw parking spots and adjust free spaces for reservations
         free_spaces = len(self.detector.spots)
         self.reserved_spots = self.db.get_all_reserved_spots()
         for i, spot in enumerate(self.detector.spots):
@@ -184,12 +200,12 @@ class MainWindow(QtWidgets.QWidget):
 
             if i in self.reserved_spots:
                 color = (0, 255, 255)  # Yellow
-                free_spaces -= 1  # Decrease free spaces for reserved spots
+                free_spaces -= 1
             elif not self.detector.spot_status[i]:
                 color = (57, 255, 20)  # Green
             else:
                 color = (0, 0, 255)   # Red
-                free_spaces -= 1  # Decrease free spaces for occupied spots
+                free_spaces -= 1
 
             cv2.polylines(frame_resized, [pts], True, color, 2)
             spot_center_x = int(sum(scaled_spot[::2]) / 4)
@@ -216,10 +232,11 @@ class MainWindow(QtWidgets.QWidget):
         return QPixmap.fromImage(convert_to_qt_format)
 
     def update_info_panel(self):
-        self.info_panel.setText("Information Panel\n")
+        self.info_panel.setText("Parking Information\nShows available spaces and status.")
 
     def display_notification(self, message):
-        self.notification_panel.setText(message)
+        current_text = self.notification_panel.toPlainText()
+        self.notification_panel.setText(f"{current_text}\n{message}".strip())
 
     def reserve_space(self):
         try:
