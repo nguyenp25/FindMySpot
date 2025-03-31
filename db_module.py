@@ -3,6 +3,7 @@ import bcrypt
 import datetime
 from twilio.rest import Client
 
+
 class Database:
     def __init__(self):
         self.client = MongoClient("mongodb://localhost:27017")  # Update as needed
@@ -62,38 +63,43 @@ class Database:
 
 
     def reserve_parking_spot(self, username, spot_id):
-        # Convert spot_id to integer
         spot_id = int(spot_id)
         if self.parking_spots.find_one({"spotId": spot_id, "isReserved": True}):
-            return False  # Spot is already reserved
+            return False
+
+        reservation_time = datetime.datetime.now()
+        expiration_time = reservation_time + datetime.timedelta(seconds=10)
 
         self.parking_spots.update_one(
-            {"spotId": spot_id}, 
-            {"$set": {"isReserved": True, "reservedBy": username, "reservationTime": datetime.datetime.now()}},
+            {"spotId": spot_id},
+            {"$set": {
+                "isReserved": True,
+                "reservedBy": username,
+                "reservationTime": reservation_time,
+                "expirationTime": expiration_time
+            }},
             upsert=True
         )
 
-        # Send SMS notification if user has a phone number
         user_data = self.get_user(username)
         if user_data and 'phone' in user_data:
-            self.send_sms_notification(user_data['phone'], f"You have successfully reserved parking spot number {spot_id}.")
-
-        return True  # Reservation successful
+            self.send_sms_notification(user_data['phone'], f"You have successfully reserved parking spot number {spot_id}. It expires in 3 minutes.")
+        
+        return True
     
     def unreserve_parking_spot(self, username, spot_id):
-        # Convert spot_id to integer
         spot_id = int(spot_id)
         spot = self.parking_spots.find_one({"spotId": spot_id, "reservedBy": username})
         if spot and spot['isReserved']:
-            self.parking_spots.update_one({"spotId": spot_id}, {"$set": {"isReserved": False, "reservedBy": None, "reservationTime": None}})
-
-            # Send SMS notification if user has a phone number
+            self.parking_spots.update_one(
+                {"spotId": spot_id},
+                {"$set": {"isReserved": False, "reservedBy": None, "reservationTime": None, "expirationTime": None}}
+            )
             user_data = self.get_user(username)
             if user_data and 'phone' in user_data:
                 self.send_sms_notification(user_data['phone'], f"You have successfully unreserved parking spot number {spot_id}.")
-
-            return True  # Unreservation successful
-        return False  # Spot not reserved by this user or doesn't exist
+            return True
+        return False
     
     def send_sms_notification(self, user_phone, message_body):
         account_sid = 'AC2ea1c971ea162d98295bf49cbb1a984f'
@@ -109,6 +115,18 @@ class Database:
             print(f"Message sent: {message.sid}")
         except Exception as e:
             print(f"Failed to send SMS: {e}")
+            
+    def get_remaining_time(self, spot_id):
+        spot = self.parking_spots.find_one({"spotId": int(spot_id)})
+        if spot and spot.get('isReserved') and 'expirationTime' in spot:
+            remaining = spot['expirationTime'] - datetime.datetime.now()
+            if remaining.total_seconds() > 0:
+                return int(remaining.total_seconds())
+            else:
+                # Unreserve the spot if expired
+                self.unreserve_parking_spot(spot['reservedBy'], spot_id)
+                return 0  # Return 0 to indicate expiration
+        return 0  # Return 0 if spot isn't reserved or doesn't exist
 
     def update_account_balance(self, username, amount):
         # Fetch the user's current balance

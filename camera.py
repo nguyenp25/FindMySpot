@@ -254,7 +254,8 @@ class MainWindow(QtWidgets.QWidget):
                         if hasattr(dashboard_screen, 'update_dashboard'):
                             dashboard_screen.update_dashboard()
                         self.space_input.clear()
-                        self.display_notification("Space reserved successfully.")
+                        self.display_notification("Space reserved successfully. You have 3 minutes.")
+                        dashboard_screen.start_reservation_timer(space_number)
                     else:
                         self.display_notification("Space already reserved!")
                 else:
